@@ -22,7 +22,7 @@
 
 2. **Anti-pattern.**
 
-→ The anti-pattern is a **hard-coded integer iteration cap**, checked by `test_no_integer_literal_iteration_cap_in_loop`. A fixed turn limit could terminate a legitimate claim before the required facts, classification, or routing decision had been completed. `claim_04_neighbor_injury` required **4 turns**, so an unnecessarily low cap could have stopped it before routing. The System 1 test suite passed **29 tests**.
+→ The anti-pattern is a **hard-coded integer iteration cap**, checked by `test_no_integer_literal_iteration_cap_in_loop`. A fixed turn limit could terminate a legitimate claim before the required facts, classification, or routing decision had been completed. `claim_04_neighbor_injury` required **4 turns**, so an unnecessarily low cap could have stopped it before routing. The System 1 test suite passed **30 tests**.
 
 3. **Tool design.**
 
@@ -72,7 +72,7 @@
 
 13. **Small state.**
 
-→ `evidence/hot_state.json` is **643 bytes**, compared with the project's **5,120-byte** hot-state budget. The bound matters because the system is intended to run repeatedly across shifts. Without a bounded hot state, persistent context could grow indefinitely, increasing token usage, latency, cost, and the amount of stale information carried into future runs. The System 4 suite passed **33 tests**.
+→ `evidence/hot_state.json` is **980 bytes**, compared with the project's **5,120-byte** hot-state budget. The bound matters because the system is intended to run repeatedly across shifts. Without a bounded hot state, persistent context could grow indefinitely, increasing token usage, latency, cost, and the amount of stale information carried into future runs. The System 4 suite passed **33 tests**.
 
 ---
 
@@ -92,11 +92,11 @@
 
 16. **Context, two faces.**
 
-→ System 2 reduced **38,708 tokens to 16,885**, a **56.38% reduction**, while preserving active information. System 4 used bounded persistent state with `hot_state.json` at **643 bytes** and SQL filtering to retrieve only the relevant defect slice. System 2 manages context within a session through summarization and selective assembly, while System 4 manages context across shifts through persistent state, database filtering, and recovery. Both use the same principle: retain context that is useful for the next decision and avoid repeatedly carrying unnecessary history.
+→ System 2 reduced **38,708 tokens to 16,885**, a **56.38% reduction**, while preserving active information. System 4 used bounded persistent state with `hot_state.json` at **980 bytes** and SQL filtering to retrieve only the relevant defect slice. System 2 manages context within a session through summarization and selective assembly, while System 4 manages context across shifts through persistent state, database filtering, and recovery. Both use the same principle: retain context that is useful for the next decision and avoid repeatedly carrying unnecessary history.
 
 17. **Reliability you can't see in one run.**
 
-→ `test_no_integer_literal_iteration_cap_in_loop` guarantees through automated inspection that the agentic loop does not contain a hidden hard-coded iteration limit. A single successful runtime execution would not reveal this problem because the claim might finish before the hidden limit was reached. This matters because the system should remain correct for claims requiring more tool-use iterations than the specific run happened to require. The System 1 suite passed **29 tests**.
+→ `test_no_integer_literal_iteration_cap_in_loop` guarantees through automated inspection that the agentic loop does not contain a hidden hard-coded iteration limit. A single successful runtime execution would not reveal this problem because the claim might finish before the hidden limit was reached. This matters because the system should remain correct for claims requiring more tool-use iterations than the specific run happened to require. The System 1 suite passed **30 tests**.
 
 18. **Blast radius.**
 
@@ -108,7 +108,7 @@
 
 19. **What broke.**
 
-→ System 1 initially failed because `anthropic 0.39.0` was incompatible with `httpx 0.28.1`, producing `Client.__init__() got an unexpected keyword argument 'proxies'`. I fixed the environment by installing `httpx<0.28`, which resulted in `httpx 0.27.2`. I did not modify the project source code for this fix. After the dependency correction, the System 1 suite passed **29/29** and the live run completed successfully.
+→ System 1 initially encountered a dependency compatibility issue between `anthropic 0.39.0` and `httpx 0.28.1`, producing `Client.__init__() got an unexpected keyword argument 'proxies'`. The environment was adjusted to use `httpx 0.27.2`. The final test run passed 30 tests. However, a live Claude API run could not be completed because `ANTHROPIC_API_KEY` was unavailable. A mock trace was generated to demonstrate the `tool_use` to `end_turn` control flow; it is not evidence of a live model run.
 
 20. **What you'd change.**
 
